@@ -26,8 +26,13 @@ def _format_entry(entry: FaqEntry) -> str:
     return f"[{entry.id}] Q: {entry.question}\nA: {entry.answer}"
 
 
-def build_tools(knowledge_dir: Path, tickets_path: Path) -> list[SdkMcpTool[Any]]:
-    """FAQ 検索とエスカレーション用のツールを作る。"""
+def build_tools(
+    knowledge_dir: Path, tickets_path: Path, customer_id: str | None = None
+) -> list[SdkMcpTool[Any]]:
+    """FAQ 検索とエスカレーション用のツールを作る。
+
+    customer_id はチャネル側で識別できる顧客 ID(LINE のユーザー ID など)で、チケットに記録される。
+    """
     entries = load_faq(knowledge_dir)
 
     @tool(
@@ -87,6 +92,7 @@ def build_tools(knowledge_dir: Path, tickets_path: Path) -> list[SdkMcpTool[Any]
             "summary": args["summary"],
             "priority": args["priority"],
             "customer_contact": args.get("customer_contact", ""),
+            "customer_id": customer_id or "",
         }
         tickets_path.parent.mkdir(parents=True, exist_ok=True)
         with tickets_path.open("a", encoding="utf-8") as f:
@@ -96,8 +102,10 @@ def build_tools(knowledge_dir: Path, tickets_path: Path) -> list[SdkMcpTool[Any]
     return [search_faq_tool, list_categories_tool, create_ticket_tool]
 
 
-def build_support_server(knowledge_dir: Path, tickets_path: Path):
-    tools = build_tools(knowledge_dir, tickets_path)
+def build_support_server(
+    knowledge_dir: Path, tickets_path: Path, customer_id: str | None = None
+):
+    tools = build_tools(knowledge_dir, tickets_path, customer_id)
     server = create_sdk_mcp_server(name=SERVER_NAME, version="0.1.0", tools=tools)
     tool_names = [f"mcp__{SERVER_NAME}__{t.name}" for t in tools]
     return server, tool_names
