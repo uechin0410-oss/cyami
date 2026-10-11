@@ -1,0 +1,19 @@
+[project]
+name = "cyami-support-agent"
+version = "0.1.0"
+description = "Claude Agent SDK で作る問い合わせ対応 AI エージェント"
+requires-python = ">=3.10"
+dependencies = ["claude-agent-sdk>=0.2.165"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0"]
+
+[project.scripts]
+support-agent = "support_agent.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["support_agent"]
